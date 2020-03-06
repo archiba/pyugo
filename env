@@ -1,0 +1,3 @@
+export PYUGO_DB_CRAWLING_DB_URI='sqlite:///crawling.sqlite3'
+export PYUGO_DB_CRAWLING_WAIT_SECONDS=3
+export PYUGO_DB_LIST_CRAWLING_ROOT_URL='https://ocg-card.com/list/'

@@ -1,0 +1,2 @@
+class YGOCard(object):
+    pass
