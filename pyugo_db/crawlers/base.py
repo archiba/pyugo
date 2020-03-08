@@ -48,3 +48,22 @@ class YGOCrawlerBase(object):
         bs = BeautifulSoup(response.text, 'html.parser')
         logger.debug(f'{url}に対するクローリング処理を終了します。')
         return bs
+
+    def post_html(self, url: str, body: str) -> BeautifulSoup:
+        """
+        requestsを使ってPOSTリクエストを送信し、レスポンスをBeautifulSoupでHTMLパースして返す。
+        例外は特に処理せずそのまま発生させる。
+        :param url: 対象URL
+        :param body: URLエンコード状態の文字列
+        :return: HTMLパース結果
+        """
+        logger.debug(f'{url}に対するPOSTによるクローリング処理を開始します。')
+        # 連続アクセスをしないための待ち処理
+        self._avoid_frequent_access()
+        logger.debug(f'{url}にPOSTリクエストします。')
+        response = requests.post(url, data=body)
+        logger.debug(f'{url}からレスポンスを受け取りました。ステータスコードは{response.status_code}です。')
+        logger.debug(f'レスポンスをパースします。')
+        bs = BeautifulSoup(response.text, 'html.parser')
+        logger.debug(f'{url}に対するクローリング処理を終了します。')
+        return bs

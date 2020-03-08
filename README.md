@@ -45,3 +45,16 @@ PYTHONPATH=$PYTHONPATH:`pwd` pipenv run alembic --config alembic.ini revision --
 ```bash
 PYTHONPATH=$PYTHONPATH:`pwd` pipenv run alembic --config alembic.ini upgrade head
 ```
+
+### リビジョンを一覧
+```bash
+PYTHONPATH=$PYTHONPATH:`pwd` pipenv run alembic --config alembic.ini history
+```
+
+## クローリング実行
+
+### カードリストのクローリング
+
+```bash
+PYTHONPATH=$PYTHONPATH:`pwd` exec pipenv run python bin/crawling_card_list.py --log-level=DEBUG
+```

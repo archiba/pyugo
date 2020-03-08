@@ -14,7 +14,7 @@ class YGOCardListCrawler(YGOCrawlerBase):
         super().__init__()
         self.root_url = PYUGO_DB_LIST_CRAWLING_ROOT_URL
 
-    def get_series_urls(self) -> Set[str]:
+    def get_pack_urls(self) -> Set[str]:
         crawler_logger.info('パック一覧の取得を開始')
         series_list_html = self.get_html(self.root_url + '/list')
         series_titles = series_list_html.find_all('dt', class_='list-series-title')
@@ -51,7 +51,8 @@ class YGOCardListCrawler(YGOCrawlerBase):
         card_list = pack_html.find('div', id='list')
         card_inf_elms = [e for e in card_list.find_all('tr', class_=['status-height', 'spell-height'])
                          if e.find('td', class_='card-number') is not None]
-        card_name_classes = ['n-mon', 'e-mon', 's-mon', 'x-mon', 'r-mon', 'l-mon', 'f-mon', 'p-mon', 'magic', 'trap']
+        card_name_classes = ['n-mon', 'e-mon', 's-mon', 'x-mon', 'r-mon', 'l-mon', 'f-mon', 'p-mon', 'magic', 'trap',
+                             'back-red', 'back-yellow', 'back-purple']
         pass_classes = ['card-pass', 'non-stts']
         card_infos = []
         for card_info in card_inf_elms:

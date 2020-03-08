@@ -7,3 +7,6 @@ PYUGO_DB_CRAWLING_WAIT_SECONDS = float(os.environ.get('PYUGO_DB_CRAWLING_WAIT_SE
 # カードリスト取得用サイトのURL
 PYUGO_DB_LIST_CRAWLING_ROOT_URL = \
     os.environ.get('PYUGO_DB_LIST_CRAWLING_ROOT_URL', 'https://ocg-card.com/')
+# カードテキスト取得用サイトのURL
+PYUGO_DB_TEXT_CRAWLING_ROOT_URL = \
+    os.environ.get('PYUGO_DB_TEXT_CRAWLING_ROOT_URL', 'https://yugipedia.com/wiki')
