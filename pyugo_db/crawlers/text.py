@@ -29,6 +29,19 @@ class YGOCardTextCrawler(YGOCrawlerBase):
         return v
 
     @staticmethod
+    def get_and_drop_one_of(dic, ks: list):
+        found = False
+        for k in ks:
+            found = k in dic.keys()
+            if not found:
+                continue
+            v = dic[k]
+            del dic[k]
+            break
+        assert found
+        return v
+
+    @staticmethod
     def get_and_drop_assert1(dic, k):
         l = YGOCardTextCrawler.get_and_drop(dic, k)
         assert len(l) == 1
@@ -49,6 +62,11 @@ class YGOCardTextCrawler(YGOCrawlerBase):
         if result:
             l.remove(v)
         return result
+
+    @staticmethod
+    def ignore(l: list, v):
+        if v in l:
+            l.remove(v)
 
     def get_text(self, card_no: str):
         logger.info(f'カード{card_no}のテキストの取得を開始。')
@@ -134,11 +152,15 @@ class YGOCardTextCrawler(YGOCrawlerBase):
         is_spirit = False
         ## デュアル
         is_gemini = False
+        ## リバース
+        is_flip = False
 
         # レベル
         level = None
         # ランク
         rank = None
+        # ペンデュラムスケール
+        pendulum_scale = None
         # リンクマーカー
         link_arrows = None
         # 攻撃力
@@ -206,6 +228,7 @@ class YGOCardTextCrawler(YGOCrawlerBase):
                 is_quick_play_spell = True
             elif prop == 'Ritual':
                 is_ritual_spell = True
+                YGOCardTextCrawler.get_and_drop_assert1(dic, 'Ritual Monster')
             else:
                 assert False, (card_type, prop)
         elif card_type == 'Trap':
@@ -215,12 +238,14 @@ class YGOCardTextCrawler(YGOCrawlerBase):
             elif prop == 'Continuous':
                 is_continuous_trap = True
             elif prop == 'Counter':
-                is_field_trap = True
+                is_counter_trap = True
             else:
                 assert False, (card_type, prop)
         elif card_type == 'Monster':
-            types = YGOCardTextCrawler.get_and_drop(dic, 'Types')
+            types = YGOCardTextCrawler.get_and_drop_one_of(dic, ['Types', 'Type'])
             type_ = types.pop(0)
+            YGOCardTextCrawler.ignore(types, 'Normal')
+            YGOCardTextCrawler.ignore(types, 'Summoned')
             card_attr = YGOCardTextCrawler.get_and_drop_assert1(dic, 'Attribute')
             if YGOCardTextCrawler.check_and_drop(types, 'Effect'):
                 has_effect = True
@@ -230,6 +255,7 @@ class YGOCardTextCrawler(YGOCrawlerBase):
                 is_fusion = True
             if YGOCardTextCrawler.check_and_drop(types, 'Ritual'):
                 is_ritual = True
+                YGOCardTextCrawler.get_and_drop_assert1(dic, 'Ritual')
             if YGOCardTextCrawler.check_and_drop(types, 'Synchro'):
                 is_synchro = True
             if YGOCardTextCrawler.check_and_drop(types, 'Xyz'):
@@ -246,6 +272,8 @@ class YGOCardTextCrawler(YGOCrawlerBase):
                 is_spirit = True
             if YGOCardTextCrawler.check_and_drop(types, 'Gemini'):
                 is_gemini = True
+            if YGOCardTextCrawler.check_and_drop(types, 'Flip'):
+                is_flip = True
             assert len(types) == 0, types
 
             if is_link:
@@ -254,6 +282,9 @@ class YGOCardTextCrawler(YGOCrawlerBase):
                 rank = YGOCardTextCrawler.get_and_drop_assert1(dic, 'Rank')
             else:
                 level = YGOCardTextCrawler.get_and_drop_assert1(dic, 'Level')
+
+            if is_pendulum:
+                pendulum_scale = YGOCardTextCrawler.get_and_drop_assert1(dic, 'Pendulum Scale')
 
             if is_link:
                 attack, link = YGOCardTextCrawler.get_and_drop(dic, 'ATK')
@@ -267,6 +298,9 @@ class YGOCardTextCrawler(YGOCrawlerBase):
             status = status_all[ocg_idx - 1]
         except:
             pass
+
+        if (status != 'Unlimited') and ('Limitation text' in dic.keys()):
+            del dic['Limitation text']
 
         assert len(dic) == 0, dic
         return {
@@ -285,8 +319,10 @@ class YGOCardTextCrawler(YGOCrawlerBase):
             'is_union': is_union,
             'is_spirit': is_spirit,
             'is_gemini': is_gemini,
+            'is_flip': is_flip,
             'level': level,
             'rank': rank,
+            'pendulum_scale': pendulum_scale,
             'link_arrows': link_arrows,
             'attack': attack,
             'defense': defense,

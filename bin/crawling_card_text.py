@@ -19,7 +19,8 @@ def run(log_level: str = 'INFO', reload: bool = False):
     crawler = YGOCardTextCrawler()
     logger.info('クローリング済みのカード情報一覧をDBから取得します。')
     session = get_session()
-    all_cards = list(session.query(YGOCrawlingCardInfo.id, YGOCrawlingCardInfo.card_no, YGOCrawlingCardInfo.name))
+    all_cards = list(session.query(YGOCrawlingCardInfo.id, YGOCrawlingCardInfo.card_no, YGOCrawlingCardInfo.name,
+                                   YGOCrawlingCardInfo.password))
     logger.info('クローリング済みのカード情報一覧をDBから取得しました。')
     if not reload:
         logger.info('未クローリングのカードのみテキスト情報のクローリングを行ます。')
@@ -38,9 +39,17 @@ def run(log_level: str = 'INFO', reload: bool = False):
             logger.info('収集済みのためスキップします。')
             continue
 
+        if card.card_no != '-':
+            crawling_key = card.card_no
+        elif card.card_no == card.password == '-':
+            logger.warning('カードにはNOもパスワードも存在しないため、クローリングを実行できません。')
+            continue
+        else:
+            crawling_key = card.password
+
         logger.info('クローラーによる情報取得を開始します。')
         try:
-            text_values = crawler.get_text(card.card_no)
+            text_values = crawler.get_text(crawling_key)
         except Exception as e:
             logger.warning('例外が発生しました。このカードのクローリングを中断します。')
             logger.warning(f'例外: {e}, {traceback.format_exc()}')
